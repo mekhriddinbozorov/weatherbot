@@ -20,19 +20,13 @@ public class BotBackgroundTask : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
          var me = await telegramBotClient.GetMeAsync(stoppingToken);
-        logger.LogInformation("Bot {username} started at {time}", me.Username, DateTime.UtcNow);
+        logger.LogInformation("Bot started: {username}", me.Username);
 
         telegramBotClient.StartReceiving(
-            updateHandler : updateHandler,
-            receiverOptions : new ReceiverOptions
-            {
-                AllowedUpdates = new []
-                {
-                  UpdateType.Message,
-                  UpdateType.EditedMessage
-                },
-            },
-            cancellationToken : stoppingToken
-        );
+            updateHandler: updateHandler,
+            receiverOptions: default,
+            cancellationToken: stoppingToken);
+        
+        // await botClient.ReceiveAsync(updateHandler.HandleUpdateAsync, updateHandler.HandlePollingErrorAsync, default);
     }
 }
