@@ -3,10 +3,11 @@ using Telegram.Bot.Types;
 
 public partial class UpdateHandler
 {
-    private Task HandleEditMessageUpdateAsync(ITelegramBotClient botClient, Message editedMessage, CancellationToken cancellationToken)
+    private Task HandleEditedMessageUpdateAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        var username = editedMessage.From?.Username ?? editedMessage.From.FirstName;
-        logger.LogInformation("Received message from {username}: {text}", username, editedMessage.Text);
+        var username = message.From?.Username ?? message.From.FirstName;
+        logger.LogInformation("Received EditedMessage from {username}", username);
+
         return Task.CompletedTask;
     }
 }

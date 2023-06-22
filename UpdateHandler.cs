@@ -6,42 +6,45 @@ using Telegram.Bot.Types.Enums;
 public partial class UpdateHandler : IUpdateHandler
 {
     private readonly ILogger<UpdateHandler> logger;
+    private readonly WeatherService weatherService;
 
-    public UpdateHandler(ILogger<UpdateHandler> logger)
+    public UpdateHandler(
+        ILogger<UpdateHandler> logger,
+        WeatherService weatherService)
     {
         this.logger = logger;
+        this.weatherService = weatherService;
     }
+
     public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "Error with bot polling");
+        logger.LogError(exception, "Error while Bot polling.");
         return Task.CompletedTask;
     }
 
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Received update {updateType}.", update.Type);
-
-        var handlerTask = update.Type switch
+        var handleTask = update.Type switch
         {
             UpdateType.Message => HandleMessageUpdateAsync(botClient, update.Message, cancellationToken),
-            UpdateType.EditedMessage => HandleEditMessageUpdateAsync(botClient, update.EditedMessage, cancellationToken),
-            _ => HandleUnknowUpdateAsync(botClient, update, cancellationToken)
+            UpdateType.EditedMessage => HandleEditedMessageUpdateAsync(botClient, update.EditedMessage, cancellationToken),
+            _ => HandleUnknownUpdateAsync(botClient, update, cancellationToken)
         };
 
         try
         {
-            await handlerTask;
+            await handleTask;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while handling {updateType} update", update.Type);
-            throw;
+            await HandlePollingErrorAsync(botClient, ex, cancellationToken);
         }
     }
 
-    private Task HandleUnknowUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+    private Task HandleUnknownUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Received message from {username}: ", update);
+        logger.LogInformation("Received {updateType} update.", update.Type);
+
         return Task.CompletedTask;
     }
 }
